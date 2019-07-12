@@ -14,6 +14,7 @@ class fuzzydict(dict):
         for k, r in process.extract(item, self.keys()):
             if r < self.score_cutoff:
                 continue
+
             yield dict.get(self, k)
 
     def __getitem__(self, item):
@@ -21,19 +22,21 @@ class fuzzydict(dict):
             raise KeyError('fuzzydict is empty')
 
         k, r = process.extractOne(item, self.keys())
+
         if r < self.score_cutoff:
             raise KeyError('No key matches item above threshold')
+
         return dict.get(self, k)
 
     def __contains__(self, item):
-        if not self:
-            return False
-
         try:
-            e = self[item]
-            return True
+            if self:
+                e = self[item]
+                return True
         except KeyError:
-            return False
+            pass
+
+        return False
 
 
 class fuzzyobject:
