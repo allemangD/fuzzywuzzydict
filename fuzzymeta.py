@@ -2,7 +2,7 @@ from fuzzywuzzy import process
 
 
 class fuzzydict(dict):
-    score_cutoff = 0
+    score_cutoff = 80
 
     def get(self, item, default=None):
         try:
@@ -11,32 +11,33 @@ class fuzzydict(dict):
             return default
 
     def get_many(self, item):
-        for k, r in process.extract(item, self.keys()):
-            if r < self.score_cutoff:
-                continue
+        if not self:
+            return
 
-            yield dict.get(self, k)
+        for value, _, _ in process.extractBests(item, self, score_cutoff=self.score_cutoff):
+            yield value
 
     def __getitem__(self, item):
         if not self:
             raise KeyError('fuzzydict is empty')
 
-        k, r = process.extractOne(item, self.keys())
-
-        if r < self.score_cutoff:
-            raise KeyError('No key matches item above threshold')
-
-        return dict.get(self, k)
-
-    def __contains__(self, item):
         try:
-            if self:
-                e = self[item]
-                return True
-        except KeyError:
+            value, _, _ = process.extractOne(item, self, score_cutoff=self.score_cutoff)
+            return value
+        except TypeError:
             pass
 
-        return False
+        return super().__getitem__(item)
+
+    def __contains__(self, item):
+        if not self:
+            return False
+
+        try:
+            _ = self[item]
+            return True
+        except KeyError:
+            return False
 
 
 class fuzzyobject:
@@ -44,12 +45,11 @@ class fuzzyobject:
 
     def __getattr__(self, item):
         try:
-            k, v = process.extractOne(item, dir(self), score_cutoff=self.__score_cutoff)
-            return getattr(self, k)
+            item, _ = process.extractOne(item, dir(self), score_cutoff=self.__score_cutoff)
         except TypeError:
             pass
 
-        raise AttributeError('Cannot fuzzy-match given attribute.')
+        return super(fuzzyobject, self).__getattribute__(item)
 
     def __setattr__(self, item, value):
         try:
