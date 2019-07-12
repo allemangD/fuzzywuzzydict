@@ -51,6 +51,14 @@ class fuzzyobject:
 
         raise AttributeError('Cannot fuzzy-match given attribute.')
 
+    def __setattr__(self, item, value):
+        try:
+            item, _ = process.extractOne(item, dir(self), score_cutoff=self.__score_cutoff)
+        except TypeError:
+            pass
+
+        super(fuzzyobject, self).__setattr__(item, value)
+
 
 class fuzzymeta(fuzzyobject, type):
     def __new__(mcs, name, bases, dct):

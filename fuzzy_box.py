@@ -15,7 +15,7 @@ class Box(metaclass=fuzzymeta):
         return 2 * (self.width + self.height)
 
     def flip(self):
-        self.hieght, self.width = self.width, self.height
+        self.height, self.width = self.width, self.height
 
     def __str__(self):
         return f'{self.width} x {self.height} Box'
