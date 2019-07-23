@@ -1,4 +1,12 @@
-from fuzzymeta import fuzzymeta
+"""fuzzymeta example
+
+Notice all the typos - the metaclass causes all attribute lookups on both classes and
+instances of Box to use the same fuzzy-matching rules as in fuzzydict.
+
+Please don't ever do this.
+"""
+
+from fuzzydict.meta import fuzzymeta
 
 
 class Box(metaclass=fuzzymeta):
